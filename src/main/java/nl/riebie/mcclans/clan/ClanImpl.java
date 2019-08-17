@@ -23,6 +23,7 @@
 package nl.riebie.mcclans.clan;
 
 import nl.riebie.mcclans.ClansImpl;
+import nl.riebie.mcclans.MCClans;
 import nl.riebie.mcclans.api.*;
 import nl.riebie.mcclans.api.enums.KillDeathFactor;
 import nl.riebie.mcclans.api.events.ClanOwnerChangeEvent;
@@ -33,6 +34,7 @@ import nl.riebie.mcclans.events.EventDispatcher;
 import nl.riebie.mcclans.persistence.TaskForwarder;
 import nl.riebie.mcclans.player.ClanPlayerImpl;
 import nl.riebie.mcclans.utils.ResultImpl;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextColors;
@@ -51,10 +53,11 @@ public class ClanImpl implements Clan, Cloneable {
     private int clanID;
     private String name;
     private ClanPlayerImpl owner;
-    private Location<World> home;
-    private int homeSetTimes = 0;
-    private long homeLastSetTimeStamp = -1;
-    private TextColor tagColor = Config.getColor(Config.CLAN_TAG_DEFAULT_COLOR);
+    private UUID uuidHomeWorld;
+    private double[] coordinatesHome;
+    private int homeSetTimes;
+    private long homeLastSetTimeStamp;
+    private TextColor tagColor;
     private String tag;
     private HashMap<String, RankImpl> ranks = new HashMap<>();
     private List<ClanPlayerImpl> members = new ArrayList<>();
@@ -74,7 +77,8 @@ public class ClanImpl implements Clan, Cloneable {
         this.owner = builder.owner;
         this.tagColor = builder.tagColor;
         this.allowAllyInvites = builder.acceptAllyInvites;
-        this.home = builder.home;
+        this.uuidHomeWorld = builder.uuidHomeWorld;
+        this.coordinatesHome = builder.coordinatesHome;
         this.homeLastSetTimeStamp = builder.homeLastSetTimeStamp;
         this.homeSetTimes = builder.homeSetTimes;
 
@@ -198,20 +202,43 @@ public class ClanImpl implements Clan, Cloneable {
         ClanSetHomeEvent.Plugin event = EventDispatcher.getInstance().dispatchPluginSetHomeEvent(this, location);
         if (event.isCancelled()) {
             return ResultImpl.ofError(event.getCancelMessage());
+        }
+        
+        setHomeInternal(location, 0.0F, 0.0F);
+        return ResultImpl.ofResult(location);
+    }
+    
+    public void setHomeInternal(@Nullable Location<World> location, float homeYaw, float homePitch) {
+        if (location == null) {
+            setHomeInternal(null, 0.0D, 0.0D, 0.0D, 0.0F, 0.0F);
         } else {
-            setHomeInternal(location);
-            return ResultImpl.ofResult(location);
+            setHomeInternal(location.getExtent().getUniqueId(), location.getX(), location.getY(), location.getZ(), homeYaw, homePitch);
         }
     }
-
-    public void setHomeInternal(@Nullable Location<World> location) {
-        home = location == null ? null : new Location<>(location.getExtent(), location.getPosition());
+    
+    public void setHomeInternal(@Nullable UUID uuidHomeWorld, double homeX, double homeY, double homeZ, float homeYaw, float homePitch) {
+        if (uuidHomeWorld == null) {
+            this.uuidHomeWorld = null;
+            this.coordinatesHome = null;
+        } else {
+            this.uuidHomeWorld = uuidHomeWorld;
+            this.coordinatesHome = new double[] { homeX, homeY, homeZ, homeYaw, homePitch };
+        }
         TaskForwarder.sendUpdateClan(this);
     }
 
     @Override
     public Location<World> getHome() {
-        return home;
+        if (uuidHomeWorld == null) {
+            return null;
+        }
+        World world = Sponge.getServer().loadWorld(uuidHomeWorld).orElse(null);
+        if (world == null) {
+            MCClans.getPlugin().getLogger().warn(String.format("Failed to load home dimension with UUID %s for clan '%s'",
+                                                               uuidHomeWorld, name ), true);
+            return null;
+        }
+        return new Location<>(world, coordinatesHome[0], coordinatesHome[1], coordinatesHome[2]);
     }
 
     public int getHomeSetTimes() {
@@ -700,7 +727,8 @@ public class ClanImpl implements Clan, Cloneable {
         private int clanID;
         private String name;
         private ClanPlayerImpl owner;
-        private Location<World> home;
+        private UUID uuidHomeWorld = null;
+        private double[] coordinatesHome = null;
         private int homeSetTimes = 0;
         private long homeLastSetTimeStamp = -1;
         private TextColor tagColor = Config.getColor(Config.CLAN_TAG_DEFAULT_COLOR);
@@ -729,8 +757,9 @@ public class ClanImpl implements Clan, Cloneable {
             return this;
         }
 
-        public Builder home(Location<World> home) {
-            this.home = home;
+        public Builder home(@Nullable UUID uuidHomeWorld, @Nonnull double[] coordinatesHome) {
+            this.uuidHomeWorld = uuidHomeWorld;
+            this.coordinatesHome = coordinatesHome.clone();
             return this;
         }
 

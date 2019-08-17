@@ -229,7 +229,7 @@ public class ClanAdminCommands {
         if (clanSetHomeEvent.isCancelled()) {
             Messages.sendWarningMessage(commandSource, clanSetHomeEvent.getCancelMessage());
         } else {
-            clan.setHomeInternal(location);
+            clan.setHomeInternal(location, 0.0F, 0.0F);
             Messages.sendBasicMessage(commandSource, Messages.CLAN_HOME_LOCATION_SET);
         }
     }

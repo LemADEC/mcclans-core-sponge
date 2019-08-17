@@ -588,7 +588,7 @@ public class ClanCommands {
                     Messages.sendYouWereChargedCurrency(player, setClanhomeCost, currencyName);
                 }
                 Location<World> location = player.getLocation();
-                clan.setHomeInternal(location);
+                clan.setHomeInternal(location, 0.0F, 0.0F);
                 clan.increaseHomeSetTimes();
                 clan.setHomeSetTimeStamp(System.currentTimeMillis());
                 Messages.sendBasicMessage(player, Messages.CLAN_HOME_LOCATION_SET);
