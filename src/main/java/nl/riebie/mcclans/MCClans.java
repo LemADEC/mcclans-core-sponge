@@ -40,7 +40,6 @@ import nl.riebie.mcclans.player.ClanPlayerImpl;
 import nl.riebie.mcclans.utils.FileUtils;
 import nl.riebie.mcclans.utils.Pair;
 
-import org.bstats.sponge.Metrics;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandManager;
@@ -84,9 +83,6 @@ public class MCClans {
     @Inject
     @ConfigDir(sharedRoot = false)
     private File configDir;
-
-    @Inject
-    private Metrics metrics;
 
     private boolean loadError = false;
 
