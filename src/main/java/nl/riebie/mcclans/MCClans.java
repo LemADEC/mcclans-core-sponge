@@ -60,6 +60,7 @@ import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.world.storage.WorldProperties;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -134,7 +135,19 @@ public class MCClans {
         if (serviceHelper.initNucleusMessageTokenService(Sponge.getPluginManager().getPlugin("mcclans"))) {
             MCClans.getPlugin().getLogger().info("Registered to Nucleus message token service", false);
         }
-
+        
+        // dump all World Properties, for debug purpose
+        Collection<WorldProperties> worldsProperties = Sponge.getServer().getAllWorldProperties();
+        MCClans.getPlugin().getLogger().info("Listing all world properties:", true);
+        for (final WorldProperties worldProperties : worldsProperties) {
+            MCClans.getPlugin().getLogger().info(String.format("- UUID %s Name %s isEnabled %s Type %s Seed %s",
+                                                               worldProperties.getUniqueId(),
+                                                               worldProperties.getWorldName(),
+                                                               worldProperties.isEnabled(),
+                                                               worldProperties.getDimensionType(),
+                                                               worldProperties.getSeed() ), true);
+        }
+        
         // Init database/xml
         if (Config.getBoolean(Config.USE_DATABASE) && DBMSType.getType(Config.getString(Config.DBMS_TYPE)).equals(DBMSType.UNRECOGNISED)) {
             Config.setValue(Config.USE_DATABASE, false);
