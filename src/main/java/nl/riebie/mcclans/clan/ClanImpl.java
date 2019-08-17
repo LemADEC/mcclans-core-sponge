@@ -41,6 +41,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.DateFormat;
 import java.util.*;
@@ -123,16 +124,16 @@ public class ClanImpl implements Clan, Cloneable {
     }
 
     public List<ClanPlayerImpl> getInvitedPlayersImpl() {
-        return new ArrayList<ClanPlayerImpl>(invitedMembers);
+        return new ArrayList<>(invitedMembers);
     }
 
     @Override
     public List<ClanPlayer> getMembers() {
-        return new ArrayList<ClanPlayer>(members);
+        return new ArrayList<>(members);
     }
 
     public List<ClanPlayerImpl> getMembersImpl() {
-        return new ArrayList<ClanPlayerImpl>(members);
+        return new ArrayList<>(members);
     }
 
     @Override
@@ -188,13 +189,11 @@ public class ClanImpl implements Clan, Cloneable {
 
     @Override
     public List<Rank> getRanks() {
-        List<Rank> rankList = new ArrayList<Rank>(ranks.values());
-        return rankList;
+        return new ArrayList<>(ranks.values());
     }
 
     public List<RankImpl> getRankImpls() {
-        List<RankImpl> rankList = new ArrayList<RankImpl>(ranks.values());
-        return rankList;
+        return new ArrayList<>(ranks.values());
     }
 
     @Override
@@ -316,8 +315,7 @@ public class ClanImpl implements Clan, Cloneable {
             }
             kdr = killsWeighted / deathsWeighted;
             int ix = (int) (kdr * 10.0); // scale it
-            double dbl2 = ((double) ix) / 10.0;
-            return dbl2;
+            return ((double) ix) / 10.0;
         } else {
             return 0;
         }
