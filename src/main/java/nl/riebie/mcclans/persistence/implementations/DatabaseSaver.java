@@ -25,6 +25,7 @@ package nl.riebie.mcclans.persistence.implementations;
 import nl.riebie.mcclans.api.enums.KillDeathFactor;
 import nl.riebie.mcclans.clan.ClanImpl;
 import nl.riebie.mcclans.clan.RankImpl;
+import nl.riebie.mcclans.config.Config;
 import nl.riebie.mcclans.persistence.DatabaseConnectionOwner;
 import nl.riebie.mcclans.persistence.DatabaseHandler;
 import nl.riebie.mcclans.persistence.QueryGenerator;
@@ -39,6 +40,7 @@ import java.util.UUID;
 public class DatabaseSaver extends DataSaver {
 
     private final static DatabaseConnectionOwner databaseConnectionOwner = DatabaseConnectionOwner.getInstance();
+    private final static String prefix = Config.getString(Config.DATABASE_TABLE_PREFIX);
 
     protected void saveClan(ClanImpl clan) throws Exception {
         PreparedStatement query = getInsertClanQuery(clan);
@@ -81,13 +83,10 @@ public class DatabaseSaver extends DataSaver {
     }
 
     public static PreparedStatement getInsertDataVersionQuery(int dataVersion) {
-        return QueryGenerator.createInsertQuery(
-                "mcc_dataversion",
-                databaseConnectionOwner.getConnection()
-        ).value(
-                "dataversion",
-                dataVersion
-        ).create();
+        return QueryGenerator.createInsertQuery(String.format("%s_dataversion", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("dataversion", dataVersion)
+                             .create();
     }
 
     public static PreparedStatement getInsertClanPlayerQuery(ClanPlayerImpl clanPlayer) {
@@ -115,14 +114,27 @@ public class DatabaseSaver extends DataSaver {
         double tax = clanPlayer.getEconomyStats().getTax();
         double debt = clanPlayer.getEconomyStats().getDebt();
 
-        return QueryGenerator.createInsertQuery("mcc_clanplayers", databaseConnectionOwner.getConnection()).value("clanplayer_id", clanPlayerID)
-                .value("uuid_most_sig_bits", uuid.getMostSignificantBits()).value("uuid_least_sig_bits", uuid.getLeastSignificantBits())
-                .value("playername", name).value("clan_id", clanID).value("rank_id", rankID).value("kills_high", killsHigh)
-                .value("kills_medium", killsMedium).value("kills_low", killsLow).value("deaths_high", deathsHigh)
-                .value("deaths_medium", deathsMedium).value("deaths_low", deathsLow).value("last_online_time", lastOnlineTime)
-                .value("ff_protection", ffProtection).value("deposit", deposit).value("withdraw", withdraw).value("tax", tax)
-                .value("debt", debt).create();
-
+        return QueryGenerator.createInsertQuery(String.format("%s_clanplayers", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("clanplayer_id", clanPlayerID)
+                             .value("uuid_most_sig_bits", uuid.getMostSignificantBits())
+                             .value("uuid_least_sig_bits", uuid.getLeastSignificantBits())
+                             .value("playername", name)
+                             .value("clan_id", clanID)
+                             .value("rank_id", rankID)
+                             .value("kills_high", killsHigh)
+                             .value("kills_medium", killsMedium)
+                             .value("kills_low", killsLow)
+                             .value("deaths_high", deathsHigh)
+                             .value("deaths_medium", deathsMedium)
+                             .value("deaths_low", deathsLow)
+                             .value("last_online_time", lastOnlineTime)
+                             .value("ff_protection", ffProtection)
+                             .value("deposit", deposit)
+                             .value("withdraw", withdraw)
+                             .value("tax", tax)
+                             .value("debt", debt)
+                             .create();
     }
 
     public static PreparedStatement getUpdateClanPlayerQuery(ClanPlayerImpl clanPlayer) {
@@ -150,19 +162,35 @@ public class DatabaseSaver extends DataSaver {
         double tax = clanPlayer.getEconomyStats().getTax();
         double debt = clanPlayer.getEconomyStats().getDebt();
 
-        return QueryGenerator.createUpdateQuery("mcc_clanplayers", databaseConnectionOwner.getConnection())
-                .value("uuid_most_sig_bits", uuid.getMostSignificantBits()).value("uuid_least_sig_bits", uuid.getLeastSignificantBits())
-                .value("playername", name).value("clan_id", clanID).value("rank_id", rankID).value("kills_high", killsHigh)
-                .value("kills_medium", killsMedium).value("kills_low", killsLow).value("deaths_high", deathsHigh)
-                .value("deaths_medium", deathsMedium).value("deaths_low", deathsLow).value("last_online_time", lastOnlineTime)
-                .value("ff_protection", ffProtection).value("deposit", deposit).value("withdraw", withdraw).value("tax", tax)
-                .value("debt", debt).where("clanplayer_id", clanPlayerID).create();
+        return QueryGenerator.createUpdateQuery(String.format("%s_clanplayers", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("uuid_most_sig_bits", uuid.getMostSignificantBits())
+                             .value("uuid_least_sig_bits", uuid.getLeastSignificantBits())
+                             .value("playername", name)
+                             .value("clan_id", clanID)
+                             .value("rank_id", rankID)
+                             .value("kills_high", killsHigh)
+                             .value("kills_medium", killsMedium)
+                             .value("kills_low", killsLow)
+                             .value("deaths_high", deathsHigh)
+                             .value("deaths_medium", deathsMedium)
+                             .value("deaths_low", deathsLow)
+                             .value("last_online_time", lastOnlineTime)
+                             .value("ff_protection", ffProtection)
+                             .value("deposit", deposit)
+                             .value("withdraw", withdraw)
+                             .value("tax", tax)
+                             .value("debt", debt)
+                             .where("clanplayer_id", clanPlayerID)
+                             .create();
 
     }
 
     public static PreparedStatement getDeleteClanPlayerQuery(int clanPlayerID) {
-        return QueryGenerator.createDeleteQuery("mcc_clanplayers", databaseConnectionOwner.getConnection()).where("clanplayer_id", clanPlayerID)
-                .create();
+        return QueryGenerator.createDeleteQuery(String.format("%s_clanplayers", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .where("clanplayer_id", clanPlayerID)
+                             .create();
     }
 
     public static PreparedStatement getInsertClanQuery(ClanImpl clan) {
@@ -196,13 +224,28 @@ public class DatabaseSaver extends DataSaver {
         double debt = clan.getBank().getDebt();
         double memberFee = clan.getBank().getMemberFee();
 
-        return QueryGenerator.createInsertQuery("mcc_clans", databaseConnectionOwner.getConnection()).value("clan_id", clanID).value("clantag", tag)
-                .value("clanname", name).value("clanplayer_id_owner", ownerID).value("tagcolor", tagColorId)
-                .value("allow_ally_invites", allowAllyInvites).value("clanhome_world", clanHomeWorld).value("clanhome_x", clanHomeX)
-                .value("clanhome_y", clanHomeY).value("clanhome_z", clanHomeZ).value("clanhome_yaw", clanHomeYaw)
-                .value("clanhome_pitch", clanHomePitch).value("clanhome_set_times", homeSetTimes)
-                .value("clanhome_set_timestamp", homeLastSetTimeStamp).value("ff_protection", ffProtection).value("creation_time", creationTime)
-                .value("bank_id", bankId).value("debt", debt).value("member_fee", memberFee).create();
+        return QueryGenerator.createInsertQuery(String.format("%s_clans", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("clan_id", clanID)
+                             .value("clantag", tag)
+                             .value("clanname", name)
+                             .value("clanplayer_id_owner", ownerID)
+                             .value("tagcolor", tagColorId)
+                             .value("allow_ally_invites", allowAllyInvites)
+                             .value("clanhome_world", clanHomeWorld)
+                             .value("clanhome_x", clanHomeX)
+                             .value("clanhome_y", clanHomeY)
+                             .value("clanhome_z", clanHomeZ)
+                             .value("clanhome_yaw", clanHomeYaw)
+                             .value("clanhome_pitch", clanHomePitch)
+                             .value("clanhome_set_times", homeSetTimes)
+                             .value("clanhome_set_timestamp", homeLastSetTimeStamp)
+                             .value("ff_protection", ffProtection)
+                             .value("creation_time", creationTime)
+                             .value("bank_id", bankId)
+                             .value("debt", debt)
+                             .value("member_fee", memberFee)
+                             .create();
     }
 
     public static PreparedStatement getUpdateClanQuery(ClanImpl clan) {
@@ -236,17 +279,35 @@ public class DatabaseSaver extends DataSaver {
         double debt = clan.getBank().getDebt();
         double memberFee = clan.getBank().getMemberFee();
 
-        return QueryGenerator.createUpdateQuery("mcc_clans", databaseConnectionOwner.getConnection()).value("clantag", tag).value("clanname", name)
-                .value("clanplayer_id_owner", ownerID).value("tagcolor", tagColorId)
-                .value("allow_ally_invites", allowAllyInvites)
-                .value("clanhome_world", clanHomeWorld).value("clanhome_x", clanHomeX).value("clanhome_y", clanHomeY).value("clanhome_z", clanHomeZ)
-                .value("clanhome_yaw", clanHomeYaw).value("clanhome_pitch", clanHomePitch).value("clanhome_set_times", homeSetTimes)
-                .value("clanhome_set_timestamp", homeLastSetTimeStamp).value("ff_protection", ffProtection).value("creation_time", creationTime)
-                .value("bank_id", bankId).value("debt", debt).value("member_fee", memberFee).where("clan_id", clanID).create();
+        return QueryGenerator.createUpdateQuery(String.format("%s_clans", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("clantag", tag)
+                             .value("clanname", name)
+                             .value("clanplayer_id_owner", ownerID)
+                             .value("tagcolor", tagColorId)
+                             .value("allow_ally_invites", allowAllyInvites)
+                             .value("clanhome_world", clanHomeWorld)
+                             .value("clanhome_x", clanHomeX)
+                             .value("clanhome_y", clanHomeY)
+                             .value("clanhome_z", clanHomeZ)
+                             .value("clanhome_yaw", clanHomeYaw)
+                             .value("clanhome_pitch", clanHomePitch)
+                             .value("clanhome_set_times", homeSetTimes)
+                             .value("clanhome_set_timestamp", homeLastSetTimeStamp)
+                             .value("ff_protection", ffProtection)
+                             .value("creation_time", creationTime)
+                             .value("bank_id", bankId)
+                             .value("debt", debt)
+                             .value("member_fee", memberFee)
+                             .where("clan_id", clanID)
+                             .create();
     }
 
     public static PreparedStatement getDeleteClanQuery(int clanID) {
-        return QueryGenerator.createDeleteQuery("mcc_clans", databaseConnectionOwner.getConnection()).where("clan_id", clanID).create();
+        return QueryGenerator.createDeleteQuery(String.format("%s_clans", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .where("clan_id", clanID)
+                             .create();
     }
 
     public static PreparedStatement getInsertRankQuery(int clanID, RankImpl rank) {
@@ -256,8 +317,14 @@ public class DatabaseSaver extends DataSaver {
 
         String permissions = rank.getPermissionsAsString();
 
-        return QueryGenerator.createInsertQuery("mcc_ranks", databaseConnectionOwner.getConnection()).value("rank_id", rankID)
-                .value("clan_id", clanID).value("rankname", name).value("permissions", permissions).value("changeable", changeable).create();
+        return QueryGenerator.createInsertQuery(String.format("%s_ranks", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("rank_id", rankID)
+                             .value("clan_id", clanID)
+                             .value("rankname", name)
+                             .value("permissions", permissions)
+                             .value("changeable", changeable)
+                             .create();
     }
 
     public static PreparedStatement getUpdateRankQuery(RankImpl rank) {
@@ -265,31 +332,45 @@ public class DatabaseSaver extends DataSaver {
         String name = rank.getName();
         boolean changeable = rank.isChangeable();
 
-        String permissions = "";
+        StringBuilder permissions = new StringBuilder();
         int i = 0;
         for (String perm : rank.getPermissions()) {
             if (i != 0) {
-                permissions += ",";
+                permissions.append(",");
             }
-            permissions += perm;
+            permissions.append(perm);
             i++;
         }
 
-        return QueryGenerator.createUpdateQuery("mcc_ranks", databaseConnectionOwner.getConnection()).value("rankname", name)
-                .value("permissions", permissions).value("changeable", changeable).where("rank_id", rankID).create();
+        return QueryGenerator.createUpdateQuery(String.format("%s_ranks", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("rankname", name)
+                             .value("permissions", permissions.toString())
+                             .value("changeable", changeable)
+                             .where("rank_id", rankID)
+                             .create();
     }
 
     public static PreparedStatement getDeleteRankQuery(int rankID) {
-        return QueryGenerator.createDeleteQuery("mcc_ranks", databaseConnectionOwner.getConnection()).where("rank_id", rankID).create();
+        return QueryGenerator.createDeleteQuery(String.format("%s_ranks", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .where("rank_id", rankID)
+                             .create();
     }
 
     public static PreparedStatement getInsertClanAllyQuery(int clanID, int clanID_ally) {
-        return QueryGenerator.createInsertQuery("mcc_clans_allies", databaseConnectionOwner.getConnection()).value("clan_id", clanID)
-                .value("clan_id_ally", clanID_ally).create();
+        return QueryGenerator.createInsertQuery(String.format("%s_clans_allies", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .value("clan_id", clanID)
+                             .value("clan_id_ally", clanID_ally)
+                             .create();
     }
 
     public static PreparedStatement getDeleteClanAllyQuery(int clanID, int clanID_ally) {
-        return QueryGenerator.createDeleteQuery("mcc_clans_allies", databaseConnectionOwner.getConnection()).where("clan_id", clanID)
-                .and("clan_id_ally", clanID_ally).create();
+        return QueryGenerator.createDeleteQuery(String.format("%s_clans_allies", prefix),
+                                                databaseConnectionOwner.getConnection() )
+                             .where("clan_id", clanID)
+                             .and("clan_id_ally", clanID_ally)
+                             .create();
     }
 }

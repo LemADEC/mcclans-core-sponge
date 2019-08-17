@@ -22,8 +22,8 @@
 
 package nl.riebie.mcclans.persistence.upgrade.versions;
 
+import nl.riebie.mcclans.config.Config;
 import nl.riebie.mcclans.persistence.DatabaseConnectionOwner;
-import nl.riebie.mcclans.persistence.QueryGenerator;
 import nl.riebie.mcclans.persistence.query.DataType;
 import nl.riebie.mcclans.persistence.upgrade.interfaces.DatabaseUpgrade;
 
@@ -32,7 +32,6 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 public class DatabaseUpgrade2 extends DatabaseUpgrade {
-    private static final String GET_CLANS_QUERY = "SELECT * FROM mcc_clans";
 
     @Override
     public int getVersion() {
@@ -41,18 +40,21 @@ public class DatabaseUpgrade2 extends DatabaseUpgrade {
 
     @Override
     public void upgradeDatabase() {
-        alterTable("mcc_clans").addColumn("bank_id", DataType.STRING);
+        alterTable(String.format("%s_clans", prefix))
+                .addColumn("bank_id", DataType.STRING);
         updateClanIdColumn();
     }
 
     private void updateClanIdColumn() {
-        ResultSet clanResultSet = DatabaseConnectionOwner.getInstance().executeQuery(GET_CLANS_QUERY);
+        ResultSet clanResultSet = DatabaseConnectionOwner.getInstance().executeQuery(String.format("SELECT * FROM %s_clans", prefix));
         if (clanResultSet != null) {
             try {
                 while (clanResultSet.next()) {
                     int clanId = clanResultSet.getInt("clan_id");
                     UUID uuid = UUID.randomUUID();
-                    updateQuery("mcc_clans").value("bank_id", uuid.toString()).where("clan_id", clanId);
+                    updateQuery(String.format("%s_clans", prefix))
+                            .value("bank_id", uuid.toString())
+                            .where("clan_id", clanId);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

@@ -34,11 +34,11 @@ public class DatabaseUpgrade3 extends DatabaseUpgrade {
 
     @Override
     public void upgradeDatabase() {
-        alterTable("mcc_clans").addColumn("debt", DataType.DOUBLE);
-        alterTable("mcc_clans").addColumn("member_fee", DataType.DOUBLE);
-        alterTable("mcc_clanplayers").addColumn("deposit", DataType.DOUBLE);
-        alterTable("mcc_clanplayers").addColumn("withdraw", DataType.DOUBLE);
-        alterTable("mcc_clanplayers").addColumn("tax", DataType.DOUBLE);
-        alterTable("mcc_clanplayers").addColumn("debt", DataType.DOUBLE);
+        alterTable(String.format("%s_clans", prefix)).addColumn("debt", DataType.DOUBLE);
+        alterTable(String.format("%s_clans", prefix)).addColumn("member_fee", DataType.DOUBLE);
+        alterTable(String.format("%s_clanplayers", prefix)).addColumn("deposit", DataType.DOUBLE);
+        alterTable(String.format("%s_clanplayers", prefix)).addColumn("withdraw", DataType.DOUBLE);
+        alterTable(String.format("%s_clanplayers", prefix)).addColumn("tax", DataType.DOUBLE);
+        alterTable(String.format("%s_clanplayers", prefix)).addColumn("debt", DataType.DOUBLE);
     }
 }

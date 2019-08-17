@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.riebie.mcclans.config.Config;
 import nl.riebie.mcclans.persistence.DatabaseConnection;
 import nl.riebie.mcclans.persistence.DatabaseConnectionOwner;
 import nl.riebie.mcclans.persistence.exceptions.WrappedDataException;
@@ -38,7 +39,8 @@ import nl.riebie.mcclans.persistence.query.table.DropQuery;
 import nl.riebie.mcclans.persistence.query.table.TableQuery;
 
 public abstract class DatabaseUpgrade extends DataUpgrade {
-
+    
+    protected String prefix;
     private List<TableQuery> queries = new ArrayList<>();
     private List<Query> updateQueries = new ArrayList<>();
 
@@ -67,6 +69,7 @@ public abstract class DatabaseUpgrade extends DataUpgrade {
 
     @Override
     public void upgrade() {
+        prefix = Config.getString(Config.DATABASE_TABLE_PREFIX);
         try {
             DatabaseConnectionOwner.getInstance().startTransaction();
             upgradeDatabase();
@@ -93,6 +96,8 @@ public abstract class DatabaseUpgrade extends DataUpgrade {
     }
 
     private void upgradeVersionTable() {
-        updateQuery("mcc_dataversion").value("dataversion", getVersion());
+        final String prefix = Config.getString(Config.DATABASE_TABLE_PREFIX);
+        updateQuery(String.format("%s_dataversion", prefix))
+                .value("dataversion", getVersion());
     }
 }

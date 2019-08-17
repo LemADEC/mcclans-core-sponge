@@ -88,6 +88,7 @@ public class Config {
     public static final String DATABASE_NAME = "database-name";
     public static final String DATABASE_SERVER_USER = "database-server-user";
     public static final String DATABASE_SERVER_PASSWORD = "database-server-password";
+    public static final String DATABASE_TABLE_PREFIX = "database-table-prefix";
 
     // ======================================== SECTION ECONOMY ======================================== //
     private static final String SECTION_ECONOMY = "economy";
@@ -165,7 +166,8 @@ public class Config {
                 ConfigOption.builder(DATABASE_SERVER, "localhost").build(),
                 ConfigOption.builder(DATABASE_NAME, "database_name").build(),
                 ConfigOption.builder(DATABASE_SERVER_USER, "user").build(),
-                ConfigOption.builder(DATABASE_SERVER_PASSWORD, "password").build()
+                ConfigOption.builder(DATABASE_SERVER_PASSWORD, "password").build(),
+                ConfigOption.builder(DATABASE_TABLE_PREFIX, "mcc").build()
         ).build();
 
         ConfigSection economyConfigSection = ConfigSection.builder(SECTION_ECONOMY).setConfigOptions(

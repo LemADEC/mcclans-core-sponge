@@ -22,6 +22,7 @@
 
 package nl.riebie.mcclans.persistence.implementations;
 
+import nl.riebie.mcclans.config.Config;
 import nl.riebie.mcclans.persistence.DatabaseConnectionOwner;
 import nl.riebie.mcclans.persistence.exceptions.DataVersionNotFoundException;
 import nl.riebie.mcclans.persistence.exceptions.GetDataVersionFailedException;
@@ -37,16 +38,22 @@ import java.util.List;
 
 public class DatabaseLoader extends DataLoader {
 
-    private static final String GET_DATAVERSION_QUERY = "SELECT * FROM mcc_dataversion";
-    private static final String GET_CLANS_QUERY = "SELECT * FROM mcc_clans";
-    private static final String GET_CLANS_ALLIES_QUERY = "SELECT * FROM mcc_clans_allies";
-    private static final String GET_CLANPLAYERS_QUERY = "SELECT * FROM mcc_clanplayers";
-    private static final String GET_RANKS_QUERY = "SELECT * FROM mcc_ranks";
+    private static String GET_DATAVERSION_QUERY;
+    private static String GET_CLANS_QUERY;
+    private static String GET_CLANS_ALLIES_QUERY;
+    private static String GET_CLANPLAYERS_QUERY;
+    private static String GET_RANKS_QUERY;
 
     private final DatabaseConnectionOwner databaseConnectionOwner = DatabaseConnectionOwner.getInstance();
 
     @Override
     protected boolean initialize() {
+        final String prefix = Config.getString(Config.DATABASE_TABLE_PREFIX);
+        GET_DATAVERSION_QUERY = String.format("SELECT * FROM %s_dataversion", prefix);
+        GET_CLANS_QUERY = String.format("SELECT * FROM %s_clans", prefix);
+        GET_CLANS_ALLIES_QUERY = String.format("SELECT * FROM %s_clans_allies", prefix);
+        GET_CLANPLAYERS_QUERY = String.format("SELECT * FROM %s_clanplayers", prefix);
+        GET_RANKS_QUERY = String.format("SELECT * FROM %s_ranks", prefix);
         return true;
     }
 

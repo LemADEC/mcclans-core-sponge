@@ -36,20 +36,20 @@ import nl.riebie.mcclans.player.ClanPlayerImpl;
 import nl.riebie.mcclans.player.LastOnlineImpl;
 import nl.riebie.mcclans.utils.Utils;
 import org.spongepowered.api.Sponge;
-import org.spongepowered.api.world.Location;
+import org.spongepowered.api.world.storage.WorldProperties;
 
 import java.util.*;
 import java.util.Map.Entry;
 
 public abstract class DataLoader {
 
-    private Map<Integer, ClanImpl> clans = new HashMap<Integer, ClanImpl>();
-    private Map<Integer, ClanPlayerImpl> clanPlayers = new HashMap<Integer, ClanPlayerImpl>();
-    private Map<Integer, RankImpl> ranks = new HashMap<Integer, RankImpl>();
+    private Map<Integer, ClanImpl> clans = new HashMap<>();
+    private Map<Integer, ClanPlayerImpl> clanPlayers = new HashMap<>();
+    private Map<Integer, RankImpl> ranks = new HashMap<>();
 
-    private Map<Integer, Integer> clanOwners = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> clanOwners = new HashMap<>();
 
-    private List<ClanPlayerImpl> markedClanPlayers = new ArrayList<ClanPlayerImpl>();
+    private List<ClanPlayerImpl> markedClanPlayers = new ArrayList<>();
 
     private int highestUsedClanID = -1;
     private int highestUsedClanPlayerID = -1;
@@ -103,7 +103,7 @@ public abstract class DataLoader {
                 }
             }
             // Perform upgrades in order
-            Collections.sort(dataUpgrades, new DataUpgradeComparator());
+            dataUpgrades.sort(new DataUpgradeComparator());
             for (DataUpgrade dataUpgrade : dataUpgrades) {
                 dataUpgrade.upgrade();
                 MCClans.getPlugin().getLogger().info("Finished data upgrade to version " + dataUpgrade.getVersion(), true);
@@ -121,22 +121,33 @@ public abstract class DataLoader {
 
     protected abstract void loadAllies();
 
+    private static boolean isFirstLoadedClan = true;
+    
     protected void loadedClan(int clanID, String clanTag, String clanName, int ownerID, String tagColorId, boolean allowAllyInvites,
                               boolean ffProtection, long creationTime, String homeWorld, double homeX, double homeY, double homeZ, float homeYaw, float homePitch,
                               int homeSetTimes, long homeLastSetTimeStamp, String bankId, double debt, double memberFee) {
-        ClanImpl clan = new ClanImpl.Builder(clanID, clanTag, clanName, bankId).tagColor(Utils.getTextColorById(tagColorId, Config.getColor(Config.CLAN_TAG_DEFAULT_COLOR))).acceptAllyInvites(allowAllyInvites)
-                .ffProtection(ffProtection).creationTime(creationTime).homeSetTimes(homeSetTimes).homeLastSetTimeStamp(homeLastSetTimeStamp).debt(debt).memberFee(memberFee).build();
-        if (homeWorld != null && Sponge.getServer().getWorld(UUID.fromString(homeWorld)).isPresent()) {
-            // TODO SPONGE homeYaw, homePitch
-            clan.setHomeInternal(new Location<>(Sponge.getServer().getWorld(UUID.fromString(homeWorld)).get(), homeX, homeY, homeZ));
+        ClanImpl clan = new ClanImpl.Builder(clanID, clanTag, clanName, bankId)
+                                .tagColor(Utils.getTextColorById(tagColorId, Config.getColor(Config.CLAN_TAG_DEFAULT_COLOR)))
+                                .acceptAllyInvites(allowAllyInvites)
+                                .ffProtection(ffProtection)
+                                .creationTime(creationTime)
+                                .homeSetTimes(homeSetTimes)
+                                .homeLastSetTimeStamp(homeLastSetTimeStamp)
+                                .debt(debt)
+                                .memberFee(memberFee)
+                                .build();
+        if (homeWorld != null) {
+            final UUID uuidHomeWorld = UUID.fromString(homeWorld);
+            // note: we can't verify the UUID at this time due Sponge incompatibility with modded dimensions, notably JED
+            clan.setHomeInternal(uuidHomeWorld, homeX, homeY, homeZ, homeYaw, homePitch);
         }
-
+        
         clan.addRank(RankFactory.getInstance().createOwner());
         clan.addRank(RankFactory.getInstance().createRecruit());
-
+        
         clanOwners.put(clanID, ownerID);
         clans.put(clanID, clan);
-
+        
         checkHighestUsedClanID(clanID);
     }
 
@@ -206,8 +217,8 @@ public abstract class DataLoader {
     }
 
     private void setResults() {
-        Map<UUID, ClanPlayerImpl> finishedClanPlayers = new HashMap<UUID, ClanPlayerImpl>();
-        Map<String, ClanImpl> finishedClans = new HashMap<String, ClanImpl>();
+        Map<UUID, ClanPlayerImpl> finishedClanPlayers = new HashMap<>();
+        Map<String, ClanImpl> finishedClans = new HashMap<>();
 
         for (ClanImpl clan : clans.values()) {
             finishedClans.put(clan.getTag().toLowerCase(), clan);

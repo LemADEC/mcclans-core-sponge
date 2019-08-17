@@ -45,51 +45,78 @@ import java.util.List;
 public class DatabaseHandler {
 
     public static final int CURRENT_DATA_VERSION = 3;
+    public final String prefix;
 
     private List<ClanPlayerImpl> markedClanPlayers = new ArrayList<>();
 
-    private final String CREATE_TABLE_DATAVERSION_QUERY = "CREATE TABLE IF NOT EXISTS `mcc_dataversion` " + "( "
-            + "`dataversion` INT(11) NOT NULL, " + "PRIMARY KEY (`dataversion`) " + ") ENGINE=InnoDB;";
-
-    private static final String COUNT_DATAVERSION_QUERY = "SELECT COUNT(*) FROM `mcc_dataversion`";
-    private static final String INSERT_DATAVERSION_QUERY = "INSERT INTO `mcc_dataversion` VALUES (" + CURRENT_DATA_VERSION + ")";
-
-    private final String CREATE_TABLE_CLANS_QUERY = "CREATE TABLE IF NOT EXISTS `mcc_clans` "
-            + "( "
-            + "`clan_id` INT(11) NOT NULL,`clantag` VARCHAR(255) NOT NULL, "
-            + "`clanname` VARCHAR(255) NOT NULL,`clanplayer_id_owner` INT(11) NOT NULL, "
-            + "`tagcolor` VARCHAR(255) NOT NULL,`allow_ally_invites` TINYINT(1) NOT NULL, "
-            + "`clanhome_world` VARCHAR(255) NULL,`clanhome_x` DOUBLE NOT NULL, "
-            + "`clanhome_y` DOUBLE NOT NULL,`clanhome_z` DOUBLE NOT NULL,`clanhome_yaw` FLOAT NOT NULL "
-            + ",`clanhome_pitch` FLOAT NOT NULL,`clanhome_set_times` INT(11) NOT NULL,`clanhome_set_timestamp` BIGINT NOT NULL,`ff_protection` TINYINT(1) NOT NULL,`creation_time` BIGINT NOT NULL, "
-            + "`bank_id` VARCHAR(255) NOT NULL, PRIMARY KEY (`clan_id`), "
-            + "`debt` DOUBLE NOT NULL, "
-            + "`member_fee` DOUBLE NOT NULL "
-            + ") ENGINE=InnoDB;";
-
-    private final String CREATE_TABLE_CLANS_ALLIES_QUERY = "CREATE TABLE IF NOT EXISTS `mcc_clans_allies` " + "( "
-            + "`clan_id` INT(11) NOT NULL,`clan_id_ally` INT(11) NOT NULL, " + "PRIMARY KEY (`clan_id`, `clan_id_ally`) " + ") ENGINE=InnoDB;";
-
-    private final String CREATE_TABLE_CLANPLAYERS_QUERY = "CREATE TABLE IF NOT EXISTS `mcc_clanplayers` "
-            + "( "
-            + "`clanplayer_id` INT NOT NULL,`uuid_most_sig_bits` BIGINT NOT NULL,`uuid_least_sig_bits` BIGINT NOT NULL,`playername` VARCHAR(255) NOT NULL, "
-            + "`clan_id` INT(11) NOT NULL,`rank_id` INT(11) NOT NULL,`kills_high` INT(11) NOT NULL "
-            + ",`kills_medium` INT(11) NOT NULL,`kills_low` INT(11) NOT NULL, " + "`deaths_high` INT(11) NOT NULL,`deaths_medium` INT(11) NOT NULL, "
-            + "`deaths_low` INT(11) NOT NULL,`ff_protection` TINYINT(1) NOT NULL,`last_online_time` BIGINT NOT NULL, "
-            + "`deposit` DOUBLE NOT NULL, "
-            + "`withdraw` DOUBLE NOT NULL, "
-            + "`tax` DOUBLE NOT NULL, "
-            + "`debt` DOUBLE NOT NULL, "
-            + "PRIMARY KEY (`clanplayer_id`) "
-            + ") ENGINE=InnoDB;";
-
-    private final String CREATE_TABLE_RANKS_QUERY = "CREATE TABLE IF NOT EXISTS `mcc_ranks` " + "( "
-            + "`rank_id` INT(11) NOT NULL,`clan_id` INT(11) NOT NULL, " + "`rankname` VARCHAR(255) NOT NULL,`permissions` VARCHAR(255) NULL, "
-            + "`changeable` TINYINT(1) NOT NULL, " + "PRIMARY KEY (`rank_id`) " + ") ENGINE=InnoDB;";
+    private final String CREATE_TABLE_DATAVERSION_QUERY;
+    private final String COUNT_DATAVERSION_QUERY;
+    private final String INSERT_DATAVERSION_QUERY;
+    private final String CREATE_TABLE_CLANS_QUERY;
+    private final String CREATE_TABLE_CLANS_ALLIES_QUERY;
+    private final String CREATE_TABLE_CLANPLAYERS_QUERY;
+    private final String CREATE_TABLE_RANKS_QUERY;
 
     private static DatabaseHandler instance;
 
     protected DatabaseHandler() {
+        prefix = Config.getString(Config.DATABASE_TABLE_PREFIX);
+        CREATE_TABLE_DATAVERSION_QUERY = String.format("CREATE TABLE IF NOT EXISTS `%s_dataversion` ("
+                                                     + "`dataversion` INT(11) NOT NULL, "
+                                                     + "PRIMARY KEY (`dataversion`) "
+                                                     + ") ENGINE=InnoDB;",
+                                                       prefix );
+    
+        COUNT_DATAVERSION_QUERY = String.format("SELECT COUNT(*) FROM `%s_dataversion`",
+                                                prefix );
+        INSERT_DATAVERSION_QUERY = String.format("INSERT INTO `%s_dataversion` VALUES (%d)",
+                                                 prefix, CURRENT_DATA_VERSION );
+    
+        CREATE_TABLE_CLANS_QUERY = String.format("CREATE TABLE IF NOT EXISTS `%s_clans` "
+                                               + "( "
+                                               + "`clan_id` INT(11) NOT NULL,`clantag` VARCHAR(255) NOT NULL, "
+                                               + "`clanname` VARCHAR(255) NOT NULL,`clanplayer_id_owner` INT(11) NOT NULL, "
+                                               + "`tagcolor` VARCHAR(255) NOT NULL,`allow_ally_invites` TINYINT(1) NOT NULL, "
+                                               + "`clanhome_world` VARCHAR(255) NULL,`clanhome_x` DOUBLE NOT NULL, "
+                                               + "`clanhome_y` DOUBLE NOT NULL,`clanhome_z` DOUBLE NOT NULL,`clanhome_yaw` FLOAT NOT NULL "
+                                               + ",`clanhome_pitch` FLOAT NOT NULL,`clanhome_set_times` INT(11) NOT NULL,`clanhome_set_timestamp` BIGINT NOT NULL,`ff_protection` TINYINT(1) NOT NULL,`creation_time` BIGINT NOT NULL, "
+                                               + "`bank_id` VARCHAR(255) NOT NULL, PRIMARY KEY (`clan_id`), "
+                                               + "`debt` DOUBLE NOT NULL, "
+                                               + "`member_fee` DOUBLE NOT NULL "
+                                               + ") ENGINE=InnoDB;",
+                                                 prefix );
+    
+        CREATE_TABLE_CLANS_ALLIES_QUERY = String.format("CREATE TABLE IF NOT EXISTS `%s_clans_allies` "
+                                                      + "( "
+                                                      + "`clan_id` INT(11) NOT NULL,`clan_id_ally` INT(11) NOT NULL, "
+                                                      + "PRIMARY KEY (`clan_id`, `clan_id_ally`) "
+                                                      + ") ENGINE=InnoDB;",
+                                                        prefix );
+    
+        CREATE_TABLE_CLANPLAYERS_QUERY = String.format("CREATE TABLE IF NOT EXISTS `%s_clanplayers` "
+                                                     + "( "
+                                                     + "`clanplayer_id` INT NOT NULL,`uuid_most_sig_bits` BIGINT NOT NULL,`uuid_least_sig_bits` BIGINT NOT NULL,`playername` VARCHAR(255) NOT NULL, "
+                                                     + "`clan_id` INT(11) NOT NULL,`rank_id` INT(11) NOT NULL,`kills_high` INT(11) NOT NULL "
+                                                     + ",`kills_medium` INT(11) NOT NULL,`kills_low` INT(11) NOT NULL, "
+                                                     + "`deaths_high` INT(11) NOT NULL,`deaths_medium` INT(11) NOT NULL, "
+                                                     + "`deaths_low` INT(11) NOT NULL,`ff_protection` TINYINT(1) NOT NULL,`last_online_time` BIGINT NOT NULL, "
+                                                     + "`deposit` DOUBLE NOT NULL, "
+                                                     + "`withdraw` DOUBLE NOT NULL, "
+                                                     + "`tax` DOUBLE NOT NULL, "
+                                                     + "`debt` DOUBLE NOT NULL, "
+                                                     + "PRIMARY KEY (`clanplayer_id`) "
+                                                     + ") ENGINE=InnoDB;",
+                                                       prefix );
+    
+        CREATE_TABLE_RANKS_QUERY = String.format("CREATE TABLE IF NOT EXISTS `%s_ranks` "
+                                               + "( "
+                                               + "`rank_id` INT(11) NOT NULL,`clan_id` INT(11) NOT NULL, "
+                                               + "`rankname` VARCHAR(255) NOT NULL,`permissions` VARCHAR(255) NULL, "
+                                               + "`changeable` TINYINT(1) NOT NULL, "
+                                               + "PRIMARY KEY (`rank_id`) "
+                                               + ") ENGINE=InnoDB;",
+                                                 prefix );
+    
     }
 
     public static DatabaseHandler getInstance() {
@@ -131,20 +158,20 @@ public class DatabaseHandler {
 
     public void clearDatabase() {
         DatabaseConnectionOwner databaseConnectionOwner = DatabaseConnectionOwner.getInstance();
-        databaseConnectionOwner.executeStatement("DROP TABLE mcc_dataversion");
-        databaseConnectionOwner.executeStatement("DROP TABLE mcc_clans");
-        databaseConnectionOwner.executeStatement("DROP TABLE mcc_clans_allies");
-        databaseConnectionOwner.executeStatement("DROP TABLE mcc_clanplayers");
-        databaseConnectionOwner.executeStatement("DROP TABLE mcc_ranks");
+        databaseConnectionOwner.executeStatement(String.format("DROP TABLE %s_dataversion", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DROP TABLE %s_clans", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DROP TABLE %s_clans_allies", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DROP TABLE %s_clanplayers", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DROP TABLE %s_ranks", prefix));
     }
 
     public void truncateDatabase() {
         DatabaseConnectionOwner databaseConnectionOwner = DatabaseConnectionOwner.getInstance();
-        databaseConnectionOwner.executeStatement("DELETE FROM mcc_dataversion");
-        databaseConnectionOwner.executeStatement("DELETE FROM mcc_clans");
-        databaseConnectionOwner.executeStatement("DELETE FROM mcc_clans_allies");
-        databaseConnectionOwner.executeStatement("DELETE FROM mcc_clanplayers");
-        databaseConnectionOwner.executeStatement("DELETE FROM mcc_ranks");
+        databaseConnectionOwner.executeStatement(String.format("DELETE FROM %s_dataversion", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DELETE FROM %s_clans", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DELETE FROM %s_clans_allies", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DELETE FROM %s_clanplayers", prefix));
+        databaseConnectionOwner.executeStatement(String.format("DELETE FROM %s_ranks", prefix));
     }
 
     public boolean save() {
@@ -177,8 +204,8 @@ public class DatabaseHandler {
         List<ClanImpl> retrievedClans = ClansImpl.getInstance().getClanImpls();
         List<ClanPlayerImpl> retrievedClanPlayers = ClansImpl.getInstance().getClanPlayerImpls();
 
-        final List<ClanImpl> clans = new ArrayList<ClanImpl>();
-        final List<ClanPlayerImpl> clanPlayers = new ArrayList<ClanPlayerImpl>();
+        final List<ClanImpl> clans = new ArrayList<>();
+        final List<ClanPlayerImpl> clanPlayers = new ArrayList<>();
 
         for (ClanImpl retrievedClan : retrievedClans) {
             clans.add(retrievedClan.clone());
@@ -189,14 +216,11 @@ public class DatabaseHandler {
         }
 
         Task.Builder taskBuilder = Sponge.getScheduler().createTaskBuilder();
-        taskBuilder.execute(new Runnable() {
-            @Override
-            public void run() {
-                JsonSaver jsonSaver = new JsonSaver();
-                jsonSaver.useBackupLocation();
-                jsonSaver.save(clans, clanPlayers);
-                MCClans.getPlugin().getLogger().info("System backup finished", false);
-            }
+        taskBuilder.execute(() -> {
+            JsonSaver jsonSaver = new JsonSaver();
+            jsonSaver.useBackupLocation();
+            jsonSaver.save(clans, clanPlayers);
+            MCClans.getPlugin().getLogger().info("System backup finished", false);
         });
         taskBuilder.async().submit(MCClans.getPlugin());
     }
