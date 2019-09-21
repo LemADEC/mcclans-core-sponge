@@ -256,7 +256,14 @@ public class CommandManager {
                 return;
             }
             ParameterParser parameterParser = parameterValidatorMap.get(Integer.class);
-            int page = args.length > 1 ? Integer.valueOf(args[1]) : 1;
+            int page = 1;
+            if (args.length > 1) {
+                try {
+                    page = Integer.parseInt(args[1]);
+                } catch (NumberFormatException exception) {
+                    // ignore argument, default to 1
+                }
+            }
 
             if (filledCommand.hasChildren()) {
                 sendContextHelp(commandSender, commandSource, filledCommand, page);
@@ -267,8 +274,16 @@ public class CommandManager {
                 filledCommand.execute(commandStructureMap.get(filledCommand), objects);
             }
             return;
+            
         } else if (firstParam.equals("help")) {
-            int page = args.length > 1 ? Integer.valueOf(args[1]) : 1;
+            int page = 1;
+            if (args.length > 1) {
+                try {
+                    page = Integer.parseInt(args[1]);
+                } catch (NumberFormatException exception) {
+                    // ignore argument, default to 1
+                }
+            }
             sendHelp(commandSource, page);
             return;
         }
