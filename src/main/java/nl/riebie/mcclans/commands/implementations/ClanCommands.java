@@ -538,9 +538,9 @@ public class ClanCommands {
         if (lastClanHomeTeleport == null || lastClanHomeTeleport.canPlayerTeleport()) {
             Location<World> currentPlayerLocation = player.getLocation();
             Location<World> lastTeleportInitiationLocation = clanPlayer.getLastTeleportInitiationLocation();
-            if (lastTeleportInitiationLocation == null
-                    || !lastTeleportInitiationLocation.getExtent().getName().equalsIgnoreCase(currentPlayerLocation.getExtent().getName())
-                    || lastTeleportInitiationLocation.getPosition().distance(currentPlayerLocation.getPosition()) != 0) {
+            if ( lastTeleportInitiationLocation == null
+              || !lastTeleportInitiationLocation.getExtent().getName().equalsIgnoreCase(currentPlayerLocation.getExtent().getName())
+              || lastTeleportInitiationLocation.getPosition().distance(currentPlayerLocation.getPosition()) != 0 ) {
                 ClanHomeTeleportEvent.User event = EventDispatcher.getInstance().dispatchUserClanHomeTeleportEvent(clanPlayer, clan);
                 if (event.isCancelled()) {
                     Messages.sendWarningMessage(player, event.getCancelMessage());
