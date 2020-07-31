@@ -264,6 +264,15 @@ public class ClanPlayerImpl implements ClanPlayer, Cloneable, CommandSender {
     }
 
     public Location<World> getLastTeleportInitiationLocation() {
+        // erase last location if world has unloaded
+        try {
+            if (lastTeleportInitiationLocation != null) {
+                lastTeleportInitiationLocation.getExtent();
+            }
+        } catch (IllegalStateException exception) {
+            lastTeleportInitiationLocation = null;
+        }
+        
         return lastTeleportInitiationLocation;
     }
 
